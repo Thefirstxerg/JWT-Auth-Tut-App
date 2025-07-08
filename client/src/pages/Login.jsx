@@ -47,20 +47,17 @@ const Login = () => {
     toast.error(err, TOAST_CONFIG.ERROR);
 
   /**
-   * Displays success toast notification
-   * @param {string} msg - Success message to display
-   */
-  const handleSuccess = (msg) =>
-    toast.success(msg, TOAST_CONFIG.SUCCESS);
-
-  /**
    * Handles form submission for user login
    * Sends login request to server and handles response
    * @param {Event} e - Form submit event
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Starting login process...');
+    console.log('Form data:', inputValue);
+    
     try {
+      console.log('Sending login request to:', API_ENDPOINTS.LOGIN);
       const { data } = await axios.post(
         API_ENDPOINTS.LOGIN,
         {
@@ -69,18 +66,23 @@ const Login = () => {
         { withCredentials: true }
       );
       
+      console.log('Login response received:', data);
       const { success, message } = data;
+      
       if (success) {
-        handleSuccess(message);
-        // Redirect to home page after successful login
+        console.log('Login successful, redirecting to home...');
+        // Small delay to ensure cookie is set before navigation
         setTimeout(() => {
+          console.log('Navigating to home page...');
           navigate(ROUTES.HOME);
-        }, 1000);
+        }, 100);
       } else {
+        console.error('Login failed:', message);
         handleError(message);
       }
     } catch (error) {
       console.error('Login error:', error);
+      console.error('Error details:', error.response?.data);
       handleError('Login failed. Please try again.');
     }
     

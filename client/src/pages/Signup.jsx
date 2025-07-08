@@ -48,13 +48,6 @@ const Signup = () => {
     toast.error(err, TOAST_CONFIG.ERROR);
 
   /**
-   * Displays success toast notification
-   * @param {string} msg - Success message to display
-   */
-  const handleSuccess = (msg) =>
-    toast.success(msg, TOAST_CONFIG.SUCCESS);
-
-  /**
    * Handles form submission for user registration
    * Sends signup request to server and handles response
    * @param {Event} e - Form submit event
@@ -72,12 +65,10 @@ const Signup = () => {
       
       const { success, message } = data;
       if (success) {
-        handleSuccess(message);
         // Redirect to home page after successful signup
-        setTimeout(() => {
-          navigate(ROUTES.HOME);
-        }, 1000);
+        navigate(ROUTES.HOME);
       } else {
+        console.error('Signup failed:', message);
         handleError(message);
       }
     } catch (error) {

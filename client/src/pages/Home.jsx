@@ -21,6 +21,14 @@ const Home = () => {
   const navigate = useNavigate();
   const [cookies, removeCookie] = useCookies([]);
   const [username, setUsername] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  /**
+   * Displays error toast notification
+   * @param {string} err - Error message to display
+   */
+  const handleError = (err) =>
+    toast.error(err, TOAST_CONFIG.ERROR);
 
   /**
    * Effect hook to verify user authentication on component mount
@@ -32,12 +40,21 @@ const Home = () => {
      * Redirects to login if token is invalid or missing
      */
     const verifyCookie = async () => {
-      // Redirect to login if no token exists
+      console.log('Home component: Starting token verification...');
+      console.log('Available cookies:', cookies);
+      
+      // If no token exists, redirect to login
       if (!cookies.token) {
+        console.log('No token found in cookies, redirecting to login');
+        setIsLoading(false);
         navigate(ROUTES.LOGIN);
+        return;
       }
       
+      console.log('Token found:', cookies.token);
+      
       try {
+        console.log('Sending verification request to:', API_ENDPOINTS.VERIFY);
         // Verify token with server
         const { data } = await axios.post(
           API_ENDPOINTS.VERIFY,
@@ -45,17 +62,26 @@ const Home = () => {
           { withCredentials: true }
         );
         
+        console.log('Verification response:', data);
         const { status, user } = data;
-        setUsername(user);
         
-        // Show welcome message or redirect to login
-        return status
-          ? toast(`Hello ${user}`, TOAST_CONFIG.SUCCESS)
-          : (removeCookie("token"), navigate(ROUTES.LOGIN));
+        if (status) {
+          console.log('Token verification successful, user:', user);
+          setUsername(user);
+          setIsLoading(false);
+        } else {
+          console.log('Token verification failed, redirecting to login');
+          handleError('Session expired. Please login again.');
+          // Token is invalid, redirect to login
+          removeCookie("token");
+          setTimeout(() => navigate(ROUTES.LOGIN), 1000);
+        }
       } catch (error) {
         console.error('Token verification error:', error);
+        console.error('Error details:', error.response?.data);
+        handleError('Authentication failed. Please login again.');
         removeCookie("token");
-        navigate(ROUTES.LOGIN);
+        setTimeout(() => navigate(ROUTES.LOGIN), 1000);
       }
     };
     
@@ -71,15 +97,19 @@ const Home = () => {
   };
 
   return (
-    <>
-      <div className="home_page">
-        <h4>
-          Welcome <span>{username}</span>
-        </h4>
-        <button onClick={Logout}>LOGOUT</button>
-      </div>
+    <div className="home_page">
+      {isLoading ? (
+        <div>Loading...</div>
+      ) : (
+        <>
+          <h4>
+            Welcome <span>{username}</span>
+          </h4>
+          <button onClick={Logout}>LOGOUT</button>
+        </>
+      )}
       <ToastContainer />
-    </>
+    </div>
   );
 };
 
