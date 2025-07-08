@@ -1,8 +1,15 @@
+/**
+ * Main App Component
+ * 
+ * Root component that handles application routing.
+ * Defines the main routes for the JWT authentication application:
+ * - Home page (protected route)
+ * - Login page
+ * - Signup page
+ */
+
 import { Route, Routes } from "react-router-dom";
 import { Login, Signup, Home } from "./pages";
-
-
-console.log('DEBUG pages →', { Home, Login, Signup }); 
 
 function App() {
   return (
