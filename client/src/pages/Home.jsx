@@ -12,14 +12,12 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCookies } from "react-cookie";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import { API_ENDPOINTS, TOAST_CONFIG, ROUTES } from "../config/constants";
 
 const Home = () => {
   const navigate = useNavigate();
-  const [cookies, removeCookie] = useCookies([]);
   const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -41,21 +39,10 @@ const Home = () => {
      */
     const verifyCookie = async () => {
       console.log('Home component: Starting token verification...');
-      console.log('Available cookies:', cookies);
-      
-      // If no token exists, redirect to login
-      if (!cookies.token) {
-        console.log('No token found in cookies, redirecting to login');
-        setIsLoading(false);
-        navigate(ROUTES.LOGIN);
-        return;
-      }
-      
-      console.log('Token found:', cookies.token);
       
       try {
         console.log('Sending verification request to:', API_ENDPOINTS.VERIFY);
-        // Verify token with server
+        // Verify token with server (token is sent automatically via httpOnly cookie)
         const { data } = await axios.post(
           API_ENDPOINTS.VERIFY,
           {},
@@ -73,26 +60,27 @@ const Home = () => {
           console.log('Token verification failed, redirecting to login');
           handleError('Session expired. Please login again.');
           // Token is invalid, redirect to login
-          removeCookie("token");
+          setIsLoading(false);
           setTimeout(() => navigate(ROUTES.LOGIN), 1000);
         }
       } catch (error) {
         console.error('Token verification error:', error);
         console.error('Error details:', error.response?.data);
         handleError('Authentication failed. Please login again.');
-        removeCookie("token");
+        setIsLoading(false);
         setTimeout(() => navigate(ROUTES.LOGIN), 1000);
       }
     };
     
     verifyCookie();
-  }, [cookies, navigate, removeCookie]);
+  }, [navigate]); // Removed cookies and removeCookie dependencies
 
   /**
-   * Handles user logout by removing token and redirecting to login
+   * Handles user logout by redirecting to login
+   * Note: HTTP-only cookies are automatically cleared by the browser when expired
+   * or can be cleared by setting a server endpoint for logout
    */
   const Logout = () => {
-    removeCookie("token");
     navigate(ROUTES.LOGIN);
   };
 

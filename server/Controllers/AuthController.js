@@ -88,10 +88,10 @@ module.exports.Login = async (req, res, next) => {
     // Set token as cookie
     res.cookie("token", token, {
       withCredentials: true,
-      httpOnly: false,
+      httpOnly: true,
     });
 
-    res.status(201).json({ message: "User logged in successfully", success: true });
+    res.status(200).json({ message: "User logged in successfully", success: true });
     next()
   } catch (error) {
     console.error('Login error:', error);
